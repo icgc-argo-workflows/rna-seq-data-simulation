@@ -1,0 +1,5 @@
+.nextflow*
+.DS_Store
+*.pyc
+*.Rproj
+.Rproj.user
