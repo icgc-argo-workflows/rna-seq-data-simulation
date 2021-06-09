@@ -51,7 +51,7 @@ def _gen_qvalues(l, n, qprobs, qrange, offset=66):
     return [''.join(_) for _ in qv.astype('str')]
 
 
-def _get_pos_prob(probs, length):
+def _get_random_pos(probs, length):
     try:
         return npr.choice(np.arange(length), 1, p=probs[:length])[0]
     except:
@@ -59,7 +59,7 @@ def _get_pos_prob(probs, length):
         return npr.choice(np.arange(length), 1)[0]
 
 
-def _get_len_prob(probs):
+def _get_random_len(probs):
     return npr.choice(np.arange(len(probs)) + 1, 1, p=probs)[0]
 
 
@@ -96,7 +96,7 @@ def _mutate_read(read_seq, qs, mposprobs, mismatches):
     ### (in the offchance that the read_seq is shorter, we just mutate the last position; 
     ### this should only happen, if a prior deletion has shortened our read due to being close
     ### to the transcript's start or end - this is very rare)
-    mpos = min(_get_pos_prob(mposprobs, len(read_seq)), len(read_seq) - 1)
+    mpos = min(_get_random_pos(mposprobs, len(read_seq)), len(read_seq) - 1)
 
     if read_seq[mpos] == 'N':
         return read_seq
@@ -134,14 +134,14 @@ def _get_del_compensation(read_header, read_seq, dlen, txs):
         return _rev_comp(tx_seq[max(0, start - dlen):start])
 
 
-def _handle_read(read_seq, read_header, txs, dprob, dposprobs, dlenprobs, iprob, ilenprobs, iposprobs, qs, mposprobs, mismatches):
+def _handle_read(read_seq, read_header, txs, dprob, dposprobs, dlenprobs, iprob, iposprobs, ilenprobs, qs, mposprobs, mismatches):
 
     readlen = len(read_seq)
 
     ### introduce deletions
     if npr.random() < dprob:
-        dpos = min(_get_pos_prob(dposprobs, dposprobs.shape[0]), readlen - 1)
-        dlen = _get_len_prob(dlenprobs)
+        dpos = min(_get_random_pos(dposprobs, dposprobs.shape[0]), readlen - 1)
+        dlen = min(_get_random_len(dlenprobs), readlen - dpos)
         comp = _get_del_compensation(read_header, read_seq, dlen, txs)
         if read_header.split(':')[-1] == 'fwd':
             read_seq = read_seq[:dpos] + read_seq[dpos+dlen:] + comp
@@ -149,9 +149,9 @@ def _handle_read(read_seq, read_header, txs, dprob, dposprobs, dlenprobs, iprob,
             read_seq = comp + read_seq[:dpos] + read_seq[dpos+dlen:]
 
     ### introduce insertions
-    if npr.random() < 1: #iprob:
-        ipos = min(_get_pos_prob(iposprobs, iposprobs.shape[0]), readlen - 1)
-        ilen = _get_len_prob(ilenprobs)
+    if npr.random() < iprob:
+        ipos = min(_get_random_pos(iposprobs, iposprobs.shape[0]), readlen - 1)
+        ilen = _get_random_len(ilenprobs)
         iseq = _get_random_seq(ilen)
         read_seq = read_seq[:ipos] + iseq + read_seq[ipos:]
         if read_header.split(':')[-1] == 'fwd':
