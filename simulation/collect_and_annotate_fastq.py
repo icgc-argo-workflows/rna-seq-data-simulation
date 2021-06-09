@@ -62,9 +62,10 @@ def main():
                 ### figure out mate pairing
                 r1s, r1e = mate1.split(':')[1].split('-')
                 r2s, r2e = mate2.split(':')[1].split('-')
-                r1 = tx_seq[int(r1s) - 1:int(r1e)]
-                r2 = tx_seq[int(r2s) - 1:int(r2e)]
-               
+                ### we do the weird int(float()) here to fix polyester coordinate outputs such es 1e+05
+                r1 = tx_seq[int(float(r1s)) - 1:int(float(r1e))]
+                r2 = tx_seq[int(float(r2s)) - 1:int(float(r2e))]
+           
                 rc1 = _rev_comp(r1)
                 rc2 = _rev_comp(r2)
 
