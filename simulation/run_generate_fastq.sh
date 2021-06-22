@@ -19,10 +19,6 @@ do
     do
         for ct in normal tumor
         do
-            if [ "${genomes[$i]}_${ct}" != "HG00100_tumor" ]
-            then
-                continue
-            fi
             for j in $(seq 1 3)
             do
                 for mate in 1 2

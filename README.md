@@ -1,10 +1,35 @@
-# icgc_argo_rna_data_simulation
-Data simulation code for ICGC ARGO RNA Tech working group
-### Running the script for Polyester (./bin/run_polyester.R)
+# ICGC ARGO RNA-Seq Data Simulation
+This repository contains code for the generation of simulated RNA-Seq reads that can be used for the benchmarking of different parts of the ICGC ARGO RNA-Seq analysis pipeline.
+
+The code has been used to generate read samples with the following properties:
+
+- fully expressed transcriptome with realistic expression distribution (based on empirical estimate taken from PCAWG samples)
+- germline variation taken from 1000 genomes project individual(s)
+- somatic variation sampled from COSMIC database
+- differential transcript expression (both dependent and independent of genotype)
+
+The addition of further simulation properties is planned.
+
+### Data preparation
+Before the simulation can be started, several steps of data preparation are necessary. 
+
+#### Pre-filtering the transcript input
+As the Polyester simulation procedure makes certain assumptions on the input data, it is necessary to appropriately pre-filter the annotation. The script [pre_filter_transcripts.py](https://github.com/icgc-argo-rna-wg/data-simulation/blob/main/preprocessing/pre_filter_transcripts.py), which is called by the wrapped [run_pre_filter_transcripts.sh](https://github.com/icgc-argo-rna-wg/data-simulation/blob/main/preprocessing/run_pre_filter_transcripts.sh), retains only transcripts with a minimum length of 400nt and removes identical sequences. The script accepts the followig parameters:
 ```
-./bin/run_polyester.R --fasta_input test_inputs/five_transcripts.fa --bias rnaf --output_dir test_simulation_outputs --num_samples 2 --num_replicates 2
+Usage: pre_filter_transcripts.py <transcripts.fa> <annotation.gtf>
 ```
-this generates the [test_simulation_output directory](https://github.com/GoekeLab/icgc_argo_rna_data_simulation/tree/main/test_simulation_outputs)
+
+#### Extracting quality statistics
+
+
+### Running the simulation
+This simulation uses the program Polyester as an engine for read generation. The wrapper for using Polyester can be easily tested with the folliwing command. 
+
+```
+./polyester/bin/run_polyester.R --fasta_input polyester/test_inputs/five_transcripts.fa --bias rnaf --output_dir polyester/test_simulation_outputs --num_samples 2 --num_replicates 2
+```
+The above command generates the [test_simulation_output directory](https://github.com/GoekeLab/icgc_argo_rna_data_simulation/tree/main/polyester/
+test_simulation_outputs)
 #### Arguments include:
 - `--fasta_input`: fasta input
 - `--output_dir`: output directory (default=./simulation_outputs)

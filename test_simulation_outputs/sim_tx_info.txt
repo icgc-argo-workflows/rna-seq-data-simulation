@@ -1,6 +1,0 @@
-transcriptid	foldchange.1	foldchange.2	DEstatus.1	DEstatus.2
-gi|424037187|ref|NR_073460.1| Homo sapiens ribosome biogenesis protein BMS1 homolog pseudogene (LOC101101776), non-coding RNA	4	1	TRUE	FALSE
-gi|424037186|ref|NR_073459.1| Homo sapiens long intergenic non-protein coding RNA 516 (LINC00516), non-coding RNA	2	2	TRUE	TRUE
-gi|209977002|ref|NM_001136213.1| Homo sapiens POTE ankyrin domain family, member H (POTEH), mRNA	3	4	TRUE	TRUE
-gi|52546690|ref|NM_001005239.1| Homo sapiens olfactory receptor, family 11, subfamily H, member 1 (OR11H1), mRNA	2	2	TRUE	TRUE
-gi|51093856|ref|NM_014406.4| Homo sapiens chaperonin containing TCP1, subunit 8 (theta)-like 2 (CCT8L2), mRNA	1	3	FALSE	TRUE

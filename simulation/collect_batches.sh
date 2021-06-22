@@ -2,6 +2,10 @@
 
 set -e
 
+threads=1
+mem=8000
+pmem=$((${mem} / ${threads}))
+
 basedir=/cluster/work/grlab/projects/projects2020-ICGC-ARGO/simulation/results/polyester/full_transcriptome_v1
 
 genomes=("HG00100" "HG00101" "HG00102" "HG00103" "HG00104")
@@ -22,7 +26,10 @@ do
                 tx_fa=${basedir}/${genomes[$i]}_${icgc_samples[$i]}/*.${ct}_${ht}.expressed.fa
                 fa_pattern=${batchbase}/'batch_*'/sample_0${j}_1.fasta.gz
                 outbase=${outdir}/${ct}_${ht}_sample_0${j}
-                python collect_and_annotate_fastq.py $tx_fa $outbase "$fa_pattern" &
+                if [ ! -f ${outbase}_1.fasta.gz -o ! -f ${outbase}_2.fasta.gz ]
+                then
+                    echo "python $(pwd)/collect_and_annotate_fastq.py $tx_fa $outbase \"$fa_pattern\"" | bsub -G ms_raets -M ${mem} -n ${threads} -We 20:00 -R "rusage[mem=${pmem}]" -R "span[hosts=1]" -J ${genomes[$i]}_${ht}_${ct} -oo ${outbase}.collect.lsf.log
+                fi
             done
         done
     done

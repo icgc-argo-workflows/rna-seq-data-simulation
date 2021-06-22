@@ -29,7 +29,7 @@ do
                 donefile=${log1%.log}.done
                 if [ ! -f ${donefile} ]
                 then
-                    echo "/usr/bin/time -v singularity exec -B /cluster/work/grlab -B /cluster/home/akahles $image $(pwd)/../bin/run_polyester.R --fasta_input ${batch}/*.fa --output_dir ${batch}/ --num_samples $N --num_replicates $R --lib_sizes 1 --fold_changes ${batch}/*factors_*.csv --read_counts ${batch}/*.read_count.csv --bias $bias && touch $donefile 2>&1 > $log1" | bsub -G ms_raets -M ${mem} -n ${threads} -We 20:00 -R "rusage[mem=${pmem}]" -R "span[hosts=1]" -J $(basename $batch) -oo $log2 
+                    echo "/usr/bin/time -v singularity exec -B /cluster/work/grlab -B /cluster/home/akahles $image $(pwd)/../polyester/bin/run_polyester.R --fasta_input ${batch}/*.fa --output_dir ${batch}/ --num_samples $N --num_replicates $R --lib_sizes 1 --fold_changes ${batch}/*factors_*.csv --read_counts ${batch}/*.read_count.csv --bias $bias && touch $donefile 2>&1 > $log1" | bsub -G ms_raets -M ${mem} -n ${threads} -We 20:00 -R "rusage[mem=${pmem}]" -R "span[hosts=1]" -J $(basename $batch) -oo $log2 
                 else
                     echo "${batch} already complete"
                 fi

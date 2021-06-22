@@ -31,8 +31,16 @@ num_replicates <- opt$num_replicates
 num_reps <- c(rep(num_replicates,num_samples))
 size <- NULL ##set to default
 lib_sizes <- c(rep(opt$lib_sizes,sum(num_reps)))
-fold_changes <- data.matrix(read.table(opt$fold_changes, sep=","))
-read_counts <- data.matrix(read.table(opt$read_counts, sep=","))
+if (!is.null(opt$fold_changes) {
+    fold_changes <- data.matrix(read.table(opt$fold_changes, sep=","))
+} else {
+    fold_changes <- matrix(sample(1:4,sum(c(rep(num_transcripts,num_samples))),replace=T),nrow=num_transcripts) ##nrow corresponds to the number of transcripts
+}
+if (!is.null(opt$read_counts) {
+    read_counts <- data.matrix(read.table(opt$read_counts, sep=","))
+} else {
+    read_counts <- 300
+}
 bias <- opt$bias
 # gcbias<-as.numeric(sample(0:7,sum(num_reps),replace = TRUE)) ##Polyester got a bug that doesn't run even the input is numeric
 # for some reason gcbias cannot be recognized as numeric: https://github.com/alyssafrazee/polyester/blob/29263d1a15ee7e33adef5d2d6aeeb93a6cb73d92/R/simulate_experiment.R#L422
