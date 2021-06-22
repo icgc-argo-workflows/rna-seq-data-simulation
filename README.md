@@ -19,8 +19,17 @@ As the Polyester simulation procedure makes certain assumptions on the input dat
 Usage: pre_filter_transcripts.py <transcripts.fa> <annotation.gtf>
 ```
 
-#### Extracting quality statistics
+### Generating simple variant calls
+The script [gen_bam_variant_calls.sh](https://github.com/icgc-argo-rna-wg/data-simulation/blob/main/preprocessing/gen_bam_variant_calls.sh) accepts a BAM file as input and uses `bcftools` to extract a list of simple variant calls. We will use these calls to ignore the respective positions when estimating the read-error distribution. 
 
+#### Extracting quality statistics
+In a third preprocessing step the necessary quality information is extracted from the alignment of a real RNA-Seq sample. The script [extract_stats_from_bam.py](https://github.com/icgc-argo-rna-wg/data-simulation/blob/main/preprocessing/extract_stats_from_bam.py) (invoked by the wrapped [run_extract_stats.sh](https://github.com/icgc-argo-rna-wg/data-simulation/blob/main/preprocessing/run_extract_stats.sh) ), takes a BAM file as well as the above variant calls as input and generates the following statistics:
+
+- mismatch distribution (over read position and quality value)
+- quality value distribution over read length
+- indel/distribution (over read position and quality value)
+
+These enitities are used in simulation later on. 
 
 ### Running the simulation
 This simulation uses the program Polyester as an engine for read generation. The wrapper for using Polyester can be easily tested with the folliwing command. 
