@@ -14,12 +14,17 @@ threads=8
 . "/cluster/home/akahles/anaconda3/etc/profile.d/conda.sh"
 conda activate bcftools
 
-echo "extracting variant positions from $bamfile"
-#bcftools mpileup --ff 256 -f ${genome} --threads $threads -a AD,DP --ignore-RG ${bamfile} | bcftools call -mv --threads $threads > ${outfile_vcf}
+if [ ! -f ${outfile_vcf} ]
+then
+    echo "extracting variant positions from $bamfile"
+    bcftools mpileup --ff 256 -f ${genome} --threads $threads -a AD,DP --ignore-RG ${bamfile} | bcftools call -mv --threads $threads > ${outfile_vcf}
+fi
 
-echo "filtering variants for acceptable quality"
-#bcftools filter -i 'QUAL>40' ${outfile_vcf} > ${outfile_vcf%.vcf}.Q40.vcf
-
+if [ ! -f ${outfile_vcf%.vcf}.Q40.vcf ]
+then
+    echo "filtering variants for acceptable quality"
+    bcftools filter -i 'QUAL>40' ${outfile_vcf} > ${outfile_vcf%.vcf}.Q40.vcf
+fi
 conda deactivate
 
 echo "generating stats for alignment file $bamfile"
