@@ -7,5 +7,5 @@ The goal of these scripts is to prepare the inputs for the simulation setup and 
    - step 1 (simple variant calling): ``bcftools``
    - step 2 (variant filtering): ``bcftools``
    - step 3 (collection of stats): ``extract_stats_from_bam.py``
-- ``run_pre_filter_transcripts.sh`` - This script pre-filters the transcript sequences given in fasta for a minimum length of 400nt and removes identical sequences. Both is necessary to prevent Polyester from having problems simulating. This run script calls the script ``pre_filter_transcripts.py``.
+- ``run_prepare_transcripts.sh`` - This script pre-filters the transcript sequences given in fasta for a minimum length of 400nt and removes identical sequences (via the script ``pre_filter_transcripts.py``). Both is necessary to prevent Polyester from having problems simulating. In addition, this wrapper calls ``get_gene_length.py``, to collect the lengths of all annotated genes, where length is defined as the number of exon positions within the gene.
 

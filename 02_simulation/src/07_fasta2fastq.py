@@ -116,7 +116,7 @@ def _get_del_compensation(read_header, read_seq, dlen, txs):
     ### get header info
     tx_id, mate1, mate2, this = read_header.split(';')
     ### get transcript sequence
-    tx_seq = txs[tx_id.split('/')[1]]
+    tx_seq = txs[tx_id.split('|', 1)[1]]
     if this.split(':')[0] == 'mate1':
         start, end = mate1.split(':')[1].split('-')
     else:

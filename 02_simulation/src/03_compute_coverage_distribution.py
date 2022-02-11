@@ -23,9 +23,9 @@ outdir = sys.argv[7]
 random_seed = int(sys.argv[8])
 
 REPLICATES = 3
-NUM_SOM_ASE = 50
-NUM_GERM_ASE = 500
-NUM_DGE = 1500
+FRAC_SOM_ASE = 0.1 #50
+FRAC_GERM_ASE = 0.1 #500
+FRAC_DGE = 0.03 #1500
 
 outbase = os.path.join(outdir, re.sub(r'.fa$', '', os.path.basename(fname_fa_sim))) + '.' + idtag
 
@@ -76,10 +76,10 @@ simulated = pd.DataFrame(index=tx_names, data={'gene_id':ge_names, 'tx_length':t
 
 ### normalize to number of fragments
 gene_exp['norm_exp'] = gene_exp.iloc[:, 0] / gene_exp['length'] * 100
-gene_exp['log_norm_exp'] = np.log10(gene_exp.iloc[:, 0] / gene_exp['length'] * 100)
+gene_exp['log10_norm_exp'] = np.log10(gene_exp.iloc[:, 0] / gene_exp['length'] * 100)
 
 ### estimate empirical distribution
-empirical_pdf = spst.gaussian_kde(gene_exp['log_norm_exp'])
+empirical_pdf = spst.gaussian_kde(gene_exp['log10_norm_exp'])
 
 ### generate sample in the size of number of simulated genes
 npr.seed(random_seed)
@@ -89,11 +89,11 @@ emp_sample = 10**empirical_pdf.resample(num_genes)[0]
 ### plot sampled expression distribution
 fig = plt.figure(figsize=(15, 10))
 ax = fig.add_subplot(111)
-_, bins, _ = ax.hist(gene_exp['log_norm_exp'], label='ICGC expression', bins=200, histtype='step', linewidth=1.5, density=True)
+_, bins, _ = ax.hist(gene_exp['log10_norm_exp'], label='ICGC expression', bins=200, histtype='step', linewidth=1.5, density=True)
 ax.hist(emp_sample, label='Simulation', bins=bins, histtype='step', linewidth=1.5, density=True)
 ax.plot(bins, empirical_pdf(bins), label='KDE estimate')
 plt.legend()
-plt.savefig('expression_dist.pdf', fmt='pdf', bbox_inches='tight')
+plt.savefig(outbase + '.expression_dist.pdf', format='pdf', bbox_inches='tight')
 
 ### we take the expression weights in multi-transcript genes from Figure 2 in https://www.nature.com/articles/s41598-020-73081-5
 ### we express at most 6 transcripts per gene here
@@ -153,11 +153,11 @@ simulated['factor_ase_ht2_s'] = np.ones((simulated.shape[0],), dtype='int')
 simulated['factor_dge_ht1'] = np.ones((simulated.shape[0],), dtype='int') 
 simulated['factor_dge_ht2'] = np.ones((simulated.shape[0],), dtype='int') 
 
-def select_and_remove(var_set, N):
+def select_and_remove(var_set, F):
 
     keys = [_ for _ in var_set]
     ### select
-    idx = npr.choice(range(len(keys)), size=N, replace=False)
+    idx = npr.choice(range(len(keys)), size=int(len(keys) * F // 1), replace=False)
     mut_set = [var_set[keys[i]] for i in idx]
     ### remove
     for i in idx:
@@ -167,10 +167,10 @@ def select_and_remove(var_set, N):
 
 ### germline ASE -- affecting both tumor and normal samples
 ### strategy:
-###  - select a subset of N germline variant positions
+###  - select a subset of FRAC_GERM_ASE*hets_germline variant positions
 ###  - for each position retrieve the affected transcripts
 ###  - for each transcript select an effect size of the variant in form of factor that is multiplied with tx_expression
-for p in select_and_remove(hets_germline, NUM_GERM_ASE):
+for p in select_and_remove(hets_germline, FRAC_GERM_ASE):
     txs = [_.split('|')[0] for _ in p]
     ### choose factor
     factor = npr.randint(2, 16)
@@ -183,10 +183,10 @@ for p in select_and_remove(hets_germline, NUM_GERM_ASE):
 
 ### somatic ASE -- affecting only tumor samples
 ### strategy:
-###  - select a subset of N somatic variant positions
+###  - select a subset of FRAC_SOM_ASE*hets_somatic variant positions
 ###  - for each position retrieve the affected transcripts
 ###  - for each transcript select an effect size of the variant in form of factor that is multiplied with tx_expression
-for p in select_and_remove(hets_germline, NUM_SOM_ASE):
+for p in select_and_remove(hets_somatic, FRAC_SOM_ASE):
     txs = [_.split('|')[0] for _ in p]
     ### choose factor, we use a 10% chance that there is NMD and the factor becomes 0
     if npr.random() < 0.1:
@@ -205,7 +205,7 @@ for p in select_and_remove(hets_germline, NUM_SOM_ASE):
 ###  - select a set of genes, irrespective of somatic variants
 ###  - for each transcript select an effect size of the variant in form of factor that is multiplied with expression of all transcripts
 gene_ids_u = np.unique(simulated['gene_id'])
-idx = npr.choice(range(gene_ids_u.shape[0]), size=NUM_DGE, replace=False)
+idx = npr.choice(range(gene_ids_u.shape[0]), size=int(gene_ids_u.shape[0] * FRAC_DGE // 1), replace=False)
 for gid in gene_ids_u[sorted(idx)]:
     gidx = simulated.index[np.where(simulated['gene_id'] == gid)[0]]
     factor = 2**((npr.random() + 1) * 2)

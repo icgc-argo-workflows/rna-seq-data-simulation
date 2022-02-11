@@ -20,13 +20,14 @@ REV_MAP = {'A':'T',
 ### This script takes the headers from the Polyester fasta files and figures out 
 ### which mate pair each read is and whether it is fwd or rev given its sequence
 def main():
-    if len(sys.argv) < 4:
-        sys.stderr.write('Usage: %s <transcripts.fa> <outbase> <fasta_R1_pattern>\n' % sys.argv[0])
+    if len(sys.argv) < 5:
+        sys.stderr.write('Usage: %s <transcripts.fa> <outbase> <haplotype> <fasta_R1_pattern>\n' % sys.argv[0])
         sys.exit(1)
 
     tx_fasta = sys.argv[1]
     outbase = sys.argv[2]
-    fa_pattern = sys.argv[3]
+    ht = sys.argv[3]
+    fa_pattern = sys.argv[4]
     
     ### get transcript sequences
     txs = _load_transcripts(tx_fasta)
@@ -89,9 +90,9 @@ def main():
                 else:
                     assert False, "The read pairs are incompatible"
 
-                fa1_out.write('>' + str(read_cnt) + '/' + ';'.join([txID, mate1, mate2, fa1_status]) + '\n')
+                fa1_out.write(f'>{ht}-{read_cnt}|' + ';'.join([txID, mate1, mate2, fa1_status]) + '\n')
                 fa1_out.write(s1 + '\n')
-                fa2_out.write('>' + str(read_cnt) + '/' + ';'.join([txID, mate1, mate2, fa2_status]) + '\n')
+                fa2_out.write(f'>{ht}-{read_cnt}|' + ';'.join([txID, mate1, mate2, fa2_status]) + '\n')
                 fa2_out.write(s2 + '\n')
                 read_cnt += 1
 

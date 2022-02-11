@@ -9,12 +9,12 @@ from intervaltree import Interval, IntervalTree
 import glob
 import pickle
 
-TMB = 3*10**-6
+#TMB = 3*10**-6
 
 def main():
 
-    if len(sys.argv) < 7:
-        sys.stderr.write('Usage: %s <transcripts.gtf> <transcripts.fa> <outname_tag> <outdir> <random_seed> <phased_germline_var.vcf-pattern> <somatic_va.vcf-pattern>\n' % sys.argv[0])
+    if len(sys.argv) < 8:
+        sys.stderr.write('Usage: %s <transcripts.gtf> <transcripts.fa> <outname_tag> <outdir> <random_seed> <TMB> <phased_germline_var.vcf-pattern> <somatic_va.vcf-pattern>\n' % sys.argv[0])
         sys.exit(1)
 
     fname_gtf = sys.argv[1]
@@ -22,18 +22,21 @@ def main():
     outtag = sys.argv[3]
     outdir = sys.argv[4]
     random_seed = int(sys.argv[5])
-    germline_vcf_pattern = sys.argv[6]
-    somatic_vcf_pattern = sys.argv[7]
+    TMB = float(sys.argv[6])
+    germline_vcf_pattern = sys.argv[7]
+    somatic_vcf_pattern = sys.argv[8]
 
     transcripts, tx_intervals, total_length = get_transcripts(fname_gtf)
 
+    sys.stderr.write('Loading germline variants\n')
     variants_germline = load_variants_1kg(germline_vcf_pattern)
     sys.stderr.write('Loading somatic variants\n')
-    if not os.path.exists('cosmic.pickle'):
+    somatic_pickle = os.path.join(os.path.dirname(somatic_vcf_pattern), 'cosmic.pickle')
+    if not os.path.exists(somatic_pickle):
         variants_somatic = load_variants_cosmic(somatic_vcf_pattern, tx_intervals, variants_germline)
-        pickle.dump(variants_somatic, open('cosmic.pickle', 'wb'))
+        pickle.dump(variants_somatic, open(somatic_pickle, 'wb'))
     else:
-        variants_somatic = pickle.load(open('cosmic.pickle', 'rb'))
+        variants_somatic = pickle.load(open(somatic_pickle, 'rb'))
     num_variants_somatic = sum([len(variants_somatic[_]) for _ in variants_somatic])
     sys.stderr.write('Parsed %i somatic variants\n' % num_variants_somatic)
 
@@ -77,6 +80,7 @@ def rev_comp(seq):
          'C':'G',
          'N':'N'}
     return ''.join([D[_] for _ in seq][::-1])
+
 
 def personalize_transcript(header, seq, transcripts, variants_germ, variants_som):
 
@@ -171,7 +175,7 @@ def write_transcript(header, seq, fh, width=60):
 
 def write_variant_positions(fname_fa, outtag, outdir, variants_germline, variants_somatic):
 
-    info = '##INFO=<ID=VT,Number=.,Type=String,Description="indicates what type of variant the line represents">\n##FORMAT=<ID=GT,Number=1,Type=String,Description="Phased Genotype">'
+    info = '##fileformat=VCFv4.3\n##INFO=<ID=VT,Number=.,Type=String,Description="indicates what type of variant the line represents">\n##FORMAT=<ID=GT,Number=1,Type=String,Description="Phased Genotype">'
     header = '#' + '\t'.join(['CHROM', 'POS', 'ID', 'REF', 'ALT', 'QUAL', 'FILTER', 'INFO', 'FORMAT', 'simulation'])
 
     outbase = os.path.join(outdir, re.sub(r'.fa$', '', os.path.basename(fname_fa))) + '.' + outtag
@@ -450,7 +454,7 @@ def get_transcripts(fname_gtf):
 
     sys.stderr.write('\nExtracted coordinates for %i transcripts\nTotal genome positions in transcriptome: %i\n\n' % (len(transcripts), total_length))
 
-    return transcripts,tx_intervals, total_length
+    return transcripts, tx_intervals, total_length
 
 
 if __name__ == "__main__":

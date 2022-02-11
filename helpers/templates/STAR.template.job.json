@@ -1,0 +1,15 @@
+{
+    "index": "/path/to/star/index",
+    "gtf": "/path/to/annotation.gtf",
+    "input_files": [
+        "sample_01_1.fastq.gz",
+        "sample_01_2.fastq.gz"
+    ],
+    "metadata": "/path/to/payload.json",
+    "sjdboverhang": 100,
+    "pair_status": "paired",
+    "publish_dir": "/path/to/output",
+    "container": "/path/to/hisat2.container",
+    "cpus": 8,
+    "mem": 48
+}

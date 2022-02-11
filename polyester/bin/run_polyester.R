@@ -31,12 +31,12 @@ num_replicates <- opt$num_replicates
 num_reps <- c(rep(num_replicates,num_samples))
 size <- NULL ##set to default
 lib_sizes <- c(rep(opt$lib_sizes,sum(num_reps)))
-if (!is.null(opt$fold_changes) {
+if (!is.null(opt$fold_changes)) {
     fold_changes <- data.matrix(read.table(opt$fold_changes, sep=","))
 } else {
     fold_changes <- matrix(sample(1:4,sum(c(rep(num_transcripts,num_samples))),replace=T),nrow=num_transcripts) ##nrow corresponds to the number of transcripts
 }
-if (!is.null(opt$read_counts) {
+if (!is.null(opt$read_counts)) {
     read_counts <- data.matrix(read.table(opt$read_counts, sep=","))
 } else {
     read_counts <- 300
