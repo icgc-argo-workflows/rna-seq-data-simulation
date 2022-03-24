@@ -27,6 +27,9 @@ def parse_config(config_fname):
         key, val = line.strip().split('=')
         ### get rid of any comments
         val = re.sub(r'#.*$', '', val)
+        ### replace bash variables (assume they have already been defined)
+        for s in re.findall(r'\${.*\}', val):
+            val = re.sub('\\' + s, config[s[2:-1]], val)
         ### handle bash arrays
         if val[0] == '(':
             val = [_.strip('"') for _ in val[1:-1].split(' ')]
