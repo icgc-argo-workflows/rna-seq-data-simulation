@@ -44,7 +44,7 @@ def _rev_comp(s):
     return ''.join([REV_MAP[_] for _ in s][::-1])
 
 
-def _gen_qvalues(l, n, qprobs, qrange, offset=66):
+def _gen_qvalues(l, n, qprobs, qrange, offset=33):
     qv = np.zeros((n, l), dtype='|S1')
     for i in range(l):
         qv[:, i] = [chr(_ + offset) for _ in npr.choice(qrange, n, p=qprobs[:, i])]
@@ -67,9 +67,9 @@ def _get_random_seq(length):
     return ''.join([ALPH[npr.randint(4)] for _ in range(length)]) 
     
 
-def _get_alternate(q, r, pos, mismatches):
+def _get_alternate(q, r, pos, mismatches, offset=33):
     
-    probs = mismatches[:, ord(q) - 66, pos][MUT_MAP[r]]
+    probs = mismatches[:, ord(q) - offset, pos][MUT_MAP[r]]
     if np.sum(probs) == 0:
         idx = npr.choice(MUT_MAP[r], 1)[0]
     else:
