@@ -155,10 +155,10 @@ simulated['factor_dge_ht2'] = np.ones((simulated.shape[0],), dtype='int')
 
 def select_and_remove(var_set, F):
 
-    keys = [_ for _ in var_set]
+    keys = [_ for _ in var_set] ### key in var_set is (chrm, pos, gt)
     ### select
     idx = npr.choice(range(len(keys)), size=int(len(keys) * F // 1), replace=False)
-    mut_set = [var_set[keys[i]] for i in idx]
+    mut_set = [[var_set[keys[i]], keys[i][2]] for i in idx] ### return [[tx, gt], ...]
     ### remove
     for i in idx:
         del var_set[keys[i]]
@@ -171,15 +171,19 @@ def select_and_remove(var_set, F):
 ###  - for each position retrieve the affected transcripts
 ###  - for each transcript select an effect size of the variant in form of factor that is multiplied with tx_expression
 for p in select_and_remove(hets_germline, FRAC_GERM_ASE):
-    txs = [_.split('|')[0] for _ in p]
-    ### choose factor
-    factor = npr.randint(2, 16)
-    down = npr.random() < 0.5
+    txs = [_.split('|')[0] for _ in p[0]]
+    ### choose factor between 1 and 4
+    factor = 1 + (3 * npr.random())
+    ### up or down-regulation
+    if npr.random() < 0.5:
+        factor = 1 / factor
     for tx in txs:
-        if down:
+        if p[1] == '1|0':
             simulated.at[tx, 'factor_ase_ht1_g'] = factor * simulated.loc[tx, 'factor_ase_ht1_g']
-        else:
+        elif p[1] == '0|1':
             simulated.at[tx, 'factor_ase_ht2_g'] = factor * simulated.loc[tx, 'factor_ase_ht2_g']
+        else:
+            assert False, 'Error: Genotype not a heterozygote'
 
 ### somatic ASE -- affecting only tumor samples
 ### strategy:
@@ -187,18 +191,22 @@ for p in select_and_remove(hets_germline, FRAC_GERM_ASE):
 ###  - for each position retrieve the affected transcripts
 ###  - for each transcript select an effect size of the variant in form of factor that is multiplied with tx_expression
 for p in select_and_remove(hets_somatic, FRAC_SOM_ASE):
-    txs = [_.split('|')[0] for _ in p]
+    txs = [_.split('|')[0] for _ in p[0]]
     ### choose factor, we use a 10% chance that there is NMD and the factor becomes 0
     if npr.random() < 0.1:
         factor = 0
     else:
-        factor = npr.randint(2, 16)
-    down = npr.random() < 0.5
+        factor = 1 + (3 * npr.random())
+    ### up or down-regulation
+    if npr.random() < 0.5:
+        factor = 1 / factor
     for tx in txs:
-        if down:
+        if p[1] == '1|0':
             simulated.at[tx, 'factor_ase_ht1_s'] = factor * simulated.loc[tx, 'factor_ase_ht1_s']
-        else:
+        elif p[1] == '0|1':
             simulated.at[tx, 'factor_ase_ht2_s'] = factor * simulated.loc[tx, 'factor_ase_ht2_s']
+        else:
+            assert False, 'Error: Genotype not a heterozygote'
 
 ### tumor DGE -- affecting only tumor samples
 ### strategy:
@@ -224,12 +232,12 @@ out_idx = np.where(simulated['reads'] > 0)[0]
 simulated[['reads' for _ in range(REPLICATES)]].iloc[out_idx].to_csv(fname_out_readcounts, sep=',', header=False, index=False)
 
 ### writing tumor and normal factors to output (one output file per haplotype)
-simulated[['factor_ase_ht1_g' for _ in range(REPLICATES)]].iloc[out_idx].to_csv(fname_out_factors_normal_ht1, sep=',', header=False, index=False)
-simulated[['factor_ase_ht2_g' for _ in range(REPLICATES)]].iloc[out_idx].to_csv(fname_out_factors_normal_ht2, sep=',', header=False, index=False)
+simulated[['factor_ase_ht1_g' for _ in range(REPLICATES)]].iloc[out_idx].to_csv(fname_out_factors_normal_ht1, sep=',', header=False, index=False, float_format='%.2f')
+simulated[['factor_ase_ht2_g' for _ in range(REPLICATES)]].iloc[out_idx].to_csv(fname_out_factors_normal_ht2, sep=',', header=False, index=False, float_format='%.2f')
 simulated['factor_tumor_ht1'] = simulated['factor_ase_ht1_g'] * simulated['factor_ase_ht1_s'] * simulated['factor_dge_ht1']
-simulated[['factor_tumor_ht1' for _ in range(REPLICATES)]].iloc[out_idx].to_csv(fname_out_factors_tumor_ht1, sep=',', header=False, index=False)
+simulated[['factor_tumor_ht1' for _ in range(REPLICATES)]].iloc[out_idx].to_csv(fname_out_factors_tumor_ht1, sep=',', header=False, index=False, float_format='%.2f')
 simulated['factor_tumor_ht2'] = simulated['factor_ase_ht2_g'] * simulated['factor_ase_ht2_s'] * simulated['factor_dge_ht2']
-simulated[['factor_tumor_ht2' for _ in range(REPLICATES)]].iloc[out_idx].to_csv(fname_out_factors_tumor_ht2, sep=',', header=False, index=False)
+simulated[['factor_tumor_ht2' for _ in range(REPLICATES)]].iloc[out_idx].to_csv(fname_out_factors_tumor_ht2, sep=',', header=False, index=False, float_format='%.2f')
 
 ### output all metadata
 simulated.to_csv(fname_out_metadata_all, sep='\t')
