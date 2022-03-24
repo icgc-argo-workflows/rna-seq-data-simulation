@@ -29,9 +29,16 @@ def main():
     transcripts, tx_intervals, total_length = get_transcripts(fname_gtf)
 
     sys.stderr.write('Loading germline variants\n')
-    variants_germline = load_variants_1kg(germline_vcf_pattern)
+    germline_pickle = os.path.join(os.path.dirname(germline_vcf_pattern), 'all_variants.pickle')
+    if not os.path.exists(germline_pickle):
+        variants_germline = load_variants_1kg(germline_vcf_pattern)
+        pickle.dump(variants_germline, open(germline_pickle, 'wb'))
+    else:
+        variants_germline = pickle.load(open(germline_pickle, 'rb'))
+        print('Loaded %i germline variants' % sum([len(variants_germline[_]) for _ in variants_germline])) 
     sys.stderr.write('Loading somatic variants\n')
-    somatic_pickle = os.path.join(os.path.dirname(somatic_vcf_pattern), 'cosmic.pickle')
+    #somatic_pickle = os.path.join(os.path.dirname(somatic_vcf_pattern), 'cosmic.pickle')
+    somatic_pickle = fname_gtf + '.cosmic_var.pickle'
     if not os.path.exists(somatic_pickle):
         variants_somatic = load_variants_cosmic(somatic_vcf_pattern, tx_intervals, variants_germline)
         pickle.dump(variants_somatic, open(somatic_pickle, 'wb'))
@@ -132,8 +139,8 @@ def personalize_transcript(header, seq, transcripts, variants_germ, variants_som
                     seq_ht2_g, t_pos2_g = mutate_seq(seq_ht2_g, t_pos2_g, var, exons[i, :])
                     seq_ht2_gs, t_pos2_gs = mutate_seq(seq_ht2_gs, t_pos2_gs, var, exons[i, :])
                     var_cnt2_g += 1
-                if not gt in ['1|1', '0|0']:
-                    germ_het.append((transcripts[t_id][0], var.begin)) # tuple: chrm, pos
+                if not var.data[2] in ['1|1', '0|0']:
+                    germ_het.append((transcripts[t_id][0], var.begin, var.data[2])) # tuple: chrm, pos, gt
         ### check whether we can apply somatic variation
         if transcripts[t_id][0] in variants_som:
             for var in variants_som[transcripts[t_id][0]][exons[i, 0]:exons[i, 1]]:
@@ -150,8 +157,8 @@ def personalize_transcript(header, seq, transcripts, variants_germ, variants_som
                 if gt[1] == '1':
                     seq_ht2_gs, t_pos2_gs = mutate_seq(seq_ht2_gs, t_pos2_gs, var, exons[i, :])
                     var_cnt2_gs += 1
-                if not gt in ['1|1', '0|0']:
-                    som_het.append((transcripts[t_id][0], var.begin)) # tuple: chrm, pos
+                if not var.data[2] in ['1|1', '0|0']:
+                    som_het.append((transcripts[t_id][0], var.begin, var.data[2])) # tuple: chrm, pos, gt
         ### move in transcript
         t_pos1_g += exons[i, 1] - exons[i, 0]
         t_pos2_g += exons[i, 1] - exons[i, 0]
