@@ -215,7 +215,7 @@ for p in select_and_remove(hets_somatic, FRAC_SOM_ASE):
 gene_ids_u = np.unique(simulated['gene_id'])
 idx = npr.choice(range(gene_ids_u.shape[0]), size=int(gene_ids_u.shape[0] * FRAC_DGE // 1), replace=False)
 for gid in gene_ids_u[sorted(idx)]:
-    gidx = simulated.index[np.where(simulated['gene_id'] == gid)[0]]
+    gidx = simulated.index[np.where(simulated['gene_id'] == gid)[0]][0]
     factor = 2**((npr.random() + 1) * 2)
     down = npr.random() < 0.5
     if down:

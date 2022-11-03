@@ -3,3 +3,4 @@
 *.pyc
 *.Rproj
 .Rproj.user
+.RData

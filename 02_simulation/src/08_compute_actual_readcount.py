@@ -14,7 +14,7 @@ for i, line in enumerate(gzip.open(fname, 'rt', encoding='utf-8')):
         if i % 10000000 == 0:
             sys.stderr.write('%i\n' % i)
         sys.stderr.flush()
-    if not line[0] == '@':
+    if not i % 4 == 0:
         continue
     tx = line.split('|')[1]
     try:

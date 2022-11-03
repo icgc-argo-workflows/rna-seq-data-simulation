@@ -32,10 +32,10 @@ do
                 do
                     tx_fasta=${currbase}/${tx_base}.${GENOMES[$i]}.${ct}_${ht}.expressed.fa 
                     fasta=${currbase}/reads/${ct}_${ht}_sample_0${j}_${mate}.fasta.gz
-                    log=${fasta%.fasta.gz}.fa2fq.lsf.log
+                    log=${fasta%.fasta.gz}.fa2fq.slurm.log
                     if [ ! -f ${fasta%.fasta.gz}.fastq.gz ]
                     then
-                        echo "python $(pwd)/src/07_fasta2fastq.py ${fasta} ${QUALITY_STATS} ${tx_fasta}" | bsub -G ms_raets -M ${mem} -n ${threads} -We 20:00 -R "rusage[mem=${pmem}]" -R "span[hosts=1]" -J ${GENOMES[$i]}_${ht}_${ct} -oo $log
+                        sbatch -c ${threads} --time=20:00:00 --mem=${mem} --output=${log} --job-name=${GENOMES[$i]}_${ht}_${ct} --wrap "python $(pwd)/src/07_fasta2fastq.py ${fasta} ${QUALITY_STATS} ${tx_fasta}"
                     else
                         echo ${fasta%.fasta.gz}.fastq.gz exists
                     fi

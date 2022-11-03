@@ -34,7 +34,7 @@ do
                 outbase=${outdir}/${ct}_${ht}_sample_0${j}
                 if [ ! -f ${outbase}_1.fasta.gz -o ! -f ${outbase}_2.fasta.gz ]
                 then
-                    echo "python $(pwd)/src/06_collect_and_annotate_fasta.py $tx_fa $outbase $ht \"$fa_pattern\"" | bsub -G ms_raets -M ${mem} -n ${threads} -We 20:00 -R "rusage[mem=${pmem}]" -R "span[hosts=1]" -J ${GENOMES[$i]}_${ht}_${ct} -oo ${outbase}.collect.lsf.log
+                    sbatch -c ${threads} --time=20:00:00 --mem=${mem} --output=${outbase}.collect.slurm.log --job-name=${GENOMES[$i]}_${ht}_${ct} --wrap "python $(pwd)/src/06_collect_and_annotate_fasta.py $tx_fa $outbase $ht \"$fa_pattern\"" 
                 fi
             done
         done

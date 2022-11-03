@@ -27,7 +27,8 @@ do
             fastq=${currbase}/reads/${ct}_sample_0${j}_1.fastq.gz
             if [ ! -f ${fastq%.fastq.gz}.cnt ]
             then
-                echo "python $(pwd)/src/08_compute_actual_readcount.py ${fastq}" | bsub -G ms_raets -M ${mem} -n ${threads} -We 20:00 -R "rusage[mem=${pmem}]" -R "span[hosts=1]" -J cnt -o /dev/null
+                #sbatch -c ${threads} --time=20:00:00 --mem=${mem} --output=/dev/null --job-name=cnt --wrap "python $(pwd)/src/08_compute_actual_readcount.py ${fastq}"
+                python $(pwd)/src/08_compute_actual_readcount.py ${fastq}
             else
                 echo ${fastq%.fastq.gz}.cnt exists
             fi
